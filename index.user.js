@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wide Screen Content Limiter Pro
 // @namespace    http://tampermonkey.net/
-// @version      1.7
-// @description  Ограничивает ширину страниц с точечной адаптацией под YouTube, Яндекс и другие сайты
+// @version      1.8
+// @description  Ограничивает ширину страниц с адаптацией под YouTube, Яндекс, GitHub и другие сайты
 // @author       You
 // @match        *://*/*
 // @grant        GM_getValue
@@ -35,9 +35,9 @@
     let menuIdBtnVis = null;
     let btn = null;
 
-    // Умный генератор CSS: точечно изолирует правила для сложного дизайна
+    // Умный генератор CSS под конкретные домены
     function getCss(width) {
-        // 1. Специфично ДЛЯ YOUTUBE
+        // 1. YouTube
         if (currentDomain.includes('youtube.com')) {
             return `
                 #page-manager {
@@ -48,7 +48,7 @@
             `;
         }
 
-        // 2. Специфично ДЛЯ ЯНДЕКСА
+        // 2. Яндекс (Поиск и сервисы)
         if (currentDomain.includes('ya.ru') || currentDomain.includes('yandex.')) {
             return `
                 .HeaderDesktop-Content,
@@ -63,7 +63,21 @@
             `;
         }
 
-        // 3. Все остальные обычные сайты
+        // 3. GitHub
+        if (currentDomain.includes('github.com')) {
+            return `
+                .application-main,
+                header[role="banner"],
+                .js-header-wrapper,
+                footer {
+                    max-width: ${width}px !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                }
+            `;
+        }
+
+        // 4. Все остальные обычные сайты
         return `
             body {
                 max-width: ${width}px !important;
@@ -126,7 +140,7 @@
     function promptForWidth() {
         const input = prompt(
             `Ширина страницы для сайта ${currentDomain} (в пикселях):\n` +
-            `Например: 1200, 1400, 1600 (для Яндекса советуем от 1100px)`,
+            `Например: 1200, 1400, 1600`,
             siteMaxWidth
         );
 
