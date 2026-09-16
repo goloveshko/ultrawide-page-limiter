@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Wide Screen Content Limiter Pro
 // @namespace    http://tampermonkey.net/
-// @version      1.8
-// @description  Ограничивает ширину страниц с адаптацией под YouTube, Яндекс, GitHub и другие сайты
+// @version      1.9
+// @description Limits page width with adaptations for YouTube, Yandex, GitHub and other sites
 // @author       You
 // @match        *://*/*
 // @grant        GM_getValue
@@ -29,26 +29,33 @@
     let siteMaxWidth = GM_getValue(keyWidth, DEFAULT_MAX_WIDTH);
     let showFloatingBtn = GM_getValue(keyShowButton, true);
 
-    let injectedStyle = null;
+    let styleObj = null; // Style object returned by GM_addStyle
     let menuIdToggle = null;
     let menuIdWidth = null;
     let menuIdBtnVis = null;
     let btn = null;
 
-    // Умный генератор CSS под конкретные домены
+    // Smart CSS generator for specific domains
     function getCss(width) {
         // 1. YouTube
         if (currentDomain.includes('youtube.com')) {
             return `
-                #page-manager {
+                #page-manager,
+                #masthead-container,
+                ytd-mini-guide-renderer {
                     max-width: ${width}px !important;
                     margin-left: auto !important;
                     margin-right: auto !important;
                 }
+                /* Shift the mini-sidebar to keep it in place */
+                ytd-mini-guide-renderer {
+                    left: calc(50% - ${width / 2}px) !important;
+                    margin-left: 0 !important;
+                }
             `;
         }
 
-        // 2. Яндекс (Поиск и сервисы)
+        // 2. Yandex (Search and services)
         if (currentDomain.includes('ya.ru') || currentDomain.includes('yandex.')) {
             return `
                 .HeaderDesktop-Content,
@@ -63,44 +70,48 @@
             `;
         }
 
-        // 3. GitHub
+        // 3. GitHub (considering the new container layout)
         if (currentDomain.includes('github.com')) {
             return `
                 .application-main,
                 header[role="banner"],
                 .js-header-wrapper,
-                footer {
+                footer,
+                .container-lg {
                     max-width: ${width}px !important;
                     margin-left: auto !important;
                     margin-right: auto !important;
+                    padding-left: 16px !important;
+                    padding-right: 16px !important;
                 }
             `;
         }
 
-        // 4. Все остальные обычные сайты
+        // 4. All other regular sites (improved universal version)
         return `
+            html {
+                overflow-x: hidden !important;
+            }
             body {
                 max-width: ${width}px !important;
                 margin-left: auto !important;
                 margin-right: auto !important;
                 box-shadow: 0 0 40px rgba(0, 0, 0, 0.15) !important;
                 min-height: 100vh !important;
+                background-color: inherit !important;
             }
         `;
     }
 
     function applyStyles(enable) {
-        if (injectedStyle) {
-            if (typeof injectedStyle.remove === 'function') {
-                injectedStyle.remove();
-            } else if (injectedStyle.parentNode) {
-                injectedStyle.parentNode.removeChild(injectedStyle);
-            }
-            injectedStyle = null;
+        // Modern way to remove styles in Tampermonkey
+        if (styleObj && typeof styleObj.remove === 'function') {
+            styleObj.remove();
+            styleObj = null;
         }
 
         if (enable) {
-            injectedStyle = GM_addStyle(getCss(siteMaxWidth));
+            styleObj = GM_addStyle(getCss(siteMaxWidth));
         }
     }
 
@@ -111,15 +122,15 @@
 
         if (typeof GM_registerMenuCommand === 'function') {
             menuIdToggle = GM_registerMenuCommand(
-                isEnabled ? '❌ Выключить ограничение ширины' : '📏 Включить ограничение ширины',
+                isEnabled ? '❌ Disable width limit' : '📏 Enable width limit',
                 toggleState
             );
             menuIdWidth = GM_registerMenuCommand(
-                `⚙️ Изменить ширину (${siteMaxWidth}px)`,
+                `⚙️ Change width (${siteMaxWidth}px)`,
                 promptForWidth
             );
             menuIdBtnVis = GM_registerMenuCommand(
-                showFloatingBtn ? '👁️ Плавающая кнопка: ВКЛ (нажмите чтобы скрыть)' : '🙈 Плавающая кнопка: ВЫКЛ (нажмите чтобы показать)',
+                showFloatingBtn ? '👁️ Floating button: ON (click to hide)' : '🙈 Floating button: OFF (click to show)',
                 toggleButtonVisibility
             );
         }
@@ -139,8 +150,8 @@
 
     function promptForWidth() {
         const input = prompt(
-            `Ширина страницы для сайта ${currentDomain} (в пикселях):\n` +
-            `Например: 1200, 1400, 1600`,
+            `Page width for ${currentDomain} (in pixels):\n` +
+            `Example: 1200, 1400, 1600`,
             siteMaxWidth
         );
 
@@ -155,7 +166,7 @@
                 updateMenuCommands();
                 updateButtonAppearance();
             } else {
-                alert('Пожалуйста, введите корректное число от 500 до 4000.');
+                alert('Please enter a valid number between 500 and 4000.');
             }
         }
     }
@@ -172,10 +183,8 @@
         if (!btn) return;
         btn.style.display = showFloatingBtn ? 'flex' : 'none';
         btn.innerHTML = isEnabled ? '📐' : '📏';
-        btn.style.background = isEnabled ? '#2e7d32' : '#333333';
-        btn.style.color = '#ffffff';
-        btn.style.border = isEnabled ? '2px solid #4caf50' : '2px solid #555555';
-        btn.title = `Ширина: ${siteMaxWidth}px\n• ЛКМ: Включить / Выключить\n• ПКМ: Изменить ширину`;
+        btn.style.background = isEnabled ? 'rgba(46, 125, 50, 0.9)' : 'rgba(40, 40, 40, 0.9)';
+        btn.title = `Width: ${siteMaxWidth}px\n• Left Click: Enable / Disable\n• Right Click: Change width`;
     }
 
     function createToggleButton() {
@@ -187,6 +196,7 @@
         if (!btn) {
             btn = document.createElement('div');
             btn.id = 'tampermonkey-width-limiter-btn';
+            // Updated styles with dark/light theme adaptability
             btn.style.cssText = `
                 position: fixed !important;
                 bottom: 20px !important;
@@ -200,10 +210,13 @@
                 cursor: pointer !important;
                 z-index: 2147483647 !important;
                 font-size: 22px !important;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.5) !important;
-                transition: transform 0.2s ease !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+                transition: transform 0.2s ease, background 0.2s ease !important;
                 user-select: none !important;
-                pointer-events: auto !important;
+                -webkit-user-select: none !important;
+                backdrop-filter: blur(4px) !important;
+                border: 2px solid rgba(255, 255, 255, 0.2) !important;
+                color: #ffffff !important;
             `;
 
             btn.addEventListener('click', (e) => {
@@ -229,7 +242,7 @@
         }
     }
 
-    // Запуск
+    // Start
     if (isEnabled) {
         applyStyles(true);
     }
@@ -241,10 +254,22 @@
         createToggleButton();
     }
 
-    // Восстановление кнопки для SPA-сайтов
-    setInterval(() => {
-        if (showFloatingBtn && !document.getElementById('tampermonkey-width-limiter-btn')) {
+    // Use MutationObserver instead of setInterval for SPA
+    // This works faster and more efficiently
+    const observer = new MutationObserver((mutations) => {
+        if (showFloatingBtn && (!btn || !document.body.contains(btn))) {
             createToggleButton();
         }
-    }, 1000);
+    });
+
+    // Start observing the document body as soon as it is available
+    const startObserving = () => {
+        if (document.body) {
+            observer.observe(document.body, { childList: true, subtree: true });
+        } else {
+            // If body is not yet available, wait for it to appear
+            setTimeout(startObserving, 100);
+        }
+    };
+    startObserving();
 })();
