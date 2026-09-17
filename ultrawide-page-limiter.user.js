@@ -1,9 +1,13 @@
 // ==UserScript==
 // @name         Wide Screen Content Limiter Pro
-// @namespace    http://tampermonkey.net/
+// @namespace    https://github.com/goloveshko/ultrawide-page-limiter
 // @version      1.9
-// @description Limits page width with adaptations for YouTube, Yandex, GitHub and other sites
-// @author       You
+// @description  Limits page width with adaptations for YouTube, Yandex, GitHub and other sites
+// @author       goloveshko
+// @homepageURL  https://github.com/goloveshko/ultrawide-page-limiter
+// @supportURL   https://github.com/goloveshko/ultrawide-page-limiter/issues
+// @downloadURL  https://raw.githubusercontent.com/goloveshko/ultrawide-page-limiter/main/ultrawide-page-limiter.user.js
+// @updateURL    https://raw.githubusercontent.com/goloveshko/ultrawide-page-limiter/main/ultrawide-page-limiter.user.js
 // @match        *://*/*
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -11,6 +15,7 @@
 // @grant        GM_registerMenuCommand
 // @grant        GM_unregisterMenuCommand
 // @run-at       document-start
+// @license      MIT
 // ==/UserScript==
 
 (function() {
@@ -29,7 +34,7 @@
     let siteMaxWidth = GM_getValue(keyWidth, DEFAULT_MAX_WIDTH);
     let showFloatingBtn = GM_getValue(keyShowButton, true);
 
-    let styleObj = null; // Style object returned by GM_addStyle
+    let styleObj = null;
     let menuIdToggle = null;
     let menuIdWidth = null;
     let menuIdBtnVis = null;
@@ -70,7 +75,7 @@
             `;
         }
 
-        // 3. GitHub (considering the new container layout)
+        // 3. GitHub (considering the container layout)
         if (currentDomain.includes('github.com')) {
             return `
                 .application-main,
@@ -87,7 +92,7 @@
             `;
         }
 
-        // 4. All other regular sites (improved universal version)
+        // 4. All other regular sites
         return `
             html {
                 overflow-x: hidden !important;
@@ -98,13 +103,11 @@
                 margin-right: auto !important;
                 box-shadow: 0 0 40px rgba(0, 0, 0, 0.15) !important;
                 min-height: 100vh !important;
-                background-color: inherit !important;
             }
         `;
     }
 
     function applyStyles(enable) {
-        // Modern way to remove styles in Tampermonkey
         if (styleObj && typeof styleObj.remove === 'function') {
             styleObj.remove();
             styleObj = null;
@@ -196,7 +199,6 @@
         if (!btn) {
             btn = document.createElement('div');
             btn.id = 'tampermonkey-width-limiter-btn';
-            // Updated styles with dark/light theme adaptability
             btn.style.cssText = `
                 position: fixed !important;
                 bottom: 20px !important;
@@ -217,6 +219,7 @@
                 backdrop-filter: blur(4px) !important;
                 border: 2px solid rgba(255, 255, 255, 0.2) !important;
                 color: #ffffff !important;
+                pointer-events: auto !important;
             `;
 
             btn.addEventListener('click', (e) => {
@@ -254,20 +257,19 @@
         createToggleButton();
     }
 
-    // Use MutationObserver instead of setInterval for SPA
-    // This works faster and more efficiently
-    const observer = new MutationObserver((mutations) => {
-        if (showFloatingBtn && (!btn || !document.body.contains(btn))) {
+    // Lightweight DOM observer for SPA navigation without CPU overhead
+    const observer = new MutationObserver(() => {
+        if (showFloatingBtn && (!btn || !document.contains(btn))) {
             createToggleButton();
         }
     });
 
-    // Start observing the document body as soon as it is available
     const startObserving = () => {
-        if (document.body) {
-            observer.observe(document.body, { childList: true, subtree: true });
+        const target = document.body || document.documentElement;
+        if (target) {
+            // Only observe direct children additions/removals
+            observer.observe(target, { childList: true });
         } else {
-            // If body is not yet available, wait for it to appear
             setTimeout(startObserving, 100);
         }
     };
