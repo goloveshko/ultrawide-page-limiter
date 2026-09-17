@@ -11,40 +11,40 @@
 // @match        *://*/*
 // @grant        GM_getValue
 // @grant        GM_setValue
-// @grant        GM_addStyle
 // @grant        GM_registerMenuCommand
 // @grant        GM_unregisterMenuCommand
 // @run-at       document-start
 // @license      MIT
 // ==/UserScript==
 
-(function() {
-    'use strict';
+(function () {
+  "use strict";
 
-    if (window.top !== window.self) return;
+  if (window.top !== window.self) return;
 
-    const DEFAULT_MAX_WIDTH = 1400;
-    const currentDomain = window.location.hostname;
-    
-    const keyEnabled = `width_limit_${currentDomain}`;
-    const keyWidth = `width_val_${currentDomain}`;
-    const keyShowButton = `show_floating_button_global`;
+  const DEFAULT_MAX_WIDTH = 1400;
+  const STYLE_ELEMENT_ID = "uw-limiter-style";
 
-    let isEnabled = GM_getValue(keyEnabled, false);
-    let siteMaxWidth = GM_getValue(keyWidth, DEFAULT_MAX_WIDTH);
-    let showFloatingBtn = GM_getValue(keyShowButton, true);
+  const currentDomain = window.location.hostname;
 
-    let styleObj = null;
-    let menuIdToggle = null;
-    let menuIdWidth = null;
-    let menuIdBtnVis = null;
-    let btn = null;
+  const keyEnabled = `width_limit_${currentDomain}`;
+  const keyWidth = `width_val_${currentDomain}`;
+  const keyShowButton = `show_floating_button_global`;
 
-    // Smart CSS generator for specific domains
-    function getCss(width) {
-        // 1. YouTube
-        if (currentDomain.includes('youtube.com')) {
-            return `
+  let isEnabled = GM_getValue(keyEnabled, false);
+  let siteMaxWidth = GM_getValue(keyWidth, DEFAULT_MAX_WIDTH);
+  let showFloatingBtn = GM_getValue(keyShowButton, true);
+
+  let menuIdToggle = null;
+  let menuIdWidth = null;
+  let menuIdBtnVis = null;
+  let btn = null;
+
+  // Smart CSS generator for specific domains
+  function getCss(width) {
+    // 1. YouTube
+    if (currentDomain.includes("youtube.com")) {
+      return `
                 #page-manager,
                 #masthead-container,
                 ytd-mini-guide-renderer {
@@ -58,11 +58,11 @@
                     margin-left: 0 !important;
                 }
             `;
-        }
+    }
 
-        // 2. Yandex (Search and services)
-        if (currentDomain.includes('ya.ru') || currentDomain.includes('yandex.')) {
-            return `
+    // 2. Yandex (Search and services)
+    if (currentDomain.includes("ya.ru") || currentDomain.includes("yandex.")) {
+      return `
                 .HeaderDesktop-Content,
                 .HeaderContainer,
                 .main,
@@ -73,11 +73,11 @@
                     margin-right: auto !important;
                 }
             `;
-        }
+    }
 
-        // 3. GitHub (considering the container layout)
-        if (currentDomain.includes('github.com')) {
-            return `
+    // 3. GitHub (considering the container layout)
+    if (currentDomain.includes("github.com")) {
+      return `
                 .application-main,
                 header[role="banner"],
                 .js-header-wrapper,
@@ -90,10 +90,10 @@
                     padding-right: 16px !important;
                 }
             `;
-        }
+    }
 
-        // 4. All other regular sites
-        return `
+    // 4. All other regular sites
+    return `
             html {
                 overflow-x: hidden !important;
             }
@@ -105,101 +105,121 @@
                 min-height: 100vh !important;
             }
         `;
+  }
+
+  function applyStyles(enable) {
+    const existingStyle = document.getElementById(STYLE_ELEMENT_ID);
+
+    if (!enable) {
+      if (existingStyle) {
+        existingStyle.remove();
+      }
+      return;
     }
 
-    function applyStyles(enable) {
-        if (styleObj && typeof styleObj.remove === 'function') {
-            styleObj.remove();
-            styleObj = null;
-        }
-
-        if (enable) {
-            styleObj = GM_addStyle(getCss(siteMaxWidth));
-        }
+    const css = getCss(siteMaxWidth);
+    if (existingStyle) {
+      existingStyle.textContent = css;
+    } else {
+      const style = document.createElement("style");
+      style.id = STYLE_ELEMENT_ID;
+      style.textContent = css;
+      const target = document.head || document.documentElement;
+      if (target) {
+        target.appendChild(style);
+      }
     }
+  }
 
-    function updateMenuCommands() {
-        if (menuIdToggle !== null && typeof GM_unregisterMenuCommand === 'function') GM_unregisterMenuCommand(menuIdToggle);
-        if (menuIdWidth !== null && typeof GM_unregisterMenuCommand === 'function') GM_unregisterMenuCommand(menuIdWidth);
-        if (menuIdBtnVis !== null && typeof GM_unregisterMenuCommand === 'function') GM_unregisterMenuCommand(menuIdBtnVis);
+  function updateMenuCommands() {
+    if (menuIdToggle !== null && typeof GM_unregisterMenuCommand === "function")
+      GM_unregisterMenuCommand(menuIdToggle);
+    if (menuIdWidth !== null && typeof GM_unregisterMenuCommand === "function")
+      GM_unregisterMenuCommand(menuIdWidth);
+    if (menuIdBtnVis !== null && typeof GM_unregisterMenuCommand === "function")
+      GM_unregisterMenuCommand(menuIdBtnVis);
 
-        if (typeof GM_registerMenuCommand === 'function') {
-            menuIdToggle = GM_registerMenuCommand(
-                isEnabled ? '❌ Disable width limit' : '📏 Enable width limit',
-                toggleState
-            );
-            menuIdWidth = GM_registerMenuCommand(
-                `⚙️ Change width (${siteMaxWidth}px)`,
-                promptForWidth
-            );
-            menuIdBtnVis = GM_registerMenuCommand(
-                showFloatingBtn ? '👁️ Floating button: ON (click to hide)' : '🙈 Floating button: OFF (click to show)',
-                toggleButtonVisibility
-            );
-        }
+    if (typeof GM_registerMenuCommand === "function") {
+      menuIdToggle = GM_registerMenuCommand(
+        isEnabled ? "❌ Disable width limit" : "📏 Enable width limit",
+        toggleState,
+      );
+      menuIdWidth = GM_registerMenuCommand(
+        `⚙️ Change width (${siteMaxWidth}px)`,
+        promptForWidth,
+      );
+      menuIdBtnVis = GM_registerMenuCommand(
+        showFloatingBtn
+          ? "👁️ Floating button: ON (click to hide)"
+          : "🙈 Floating button: OFF (click to show)",
+        toggleButtonVisibility,
+      );
     }
+  }
 
-    function toggleButtonVisibility() {
-        showFloatingBtn = !showFloatingBtn;
-        GM_setValue(keyShowButton, showFloatingBtn);
-        
-        if (btn) {
-            btn.style.display = showFloatingBtn ? 'flex' : 'none';
-        } else if (showFloatingBtn) {
-            createToggleButton();
-        }
-        updateMenuCommands();
+  function toggleButtonVisibility() {
+    showFloatingBtn = !showFloatingBtn;
+    GM_setValue(keyShowButton, showFloatingBtn);
+
+    if (btn) {
+      btn.style.display = showFloatingBtn ? "flex" : "none";
+    } else if (showFloatingBtn) {
+      createToggleButton();
     }
+    updateMenuCommands();
+  }
 
-    function promptForWidth() {
-        const input = prompt(
-            `Page width for ${currentDomain} (in pixels):\n` +
-            `Example: 1200, 1400, 1600`,
-            siteMaxWidth
-        );
+  function promptForWidth() {
+    const input = prompt(
+      `Page width for ${currentDomain} (in pixels):\n` +
+        `Example: 1200, 1400, 1600`,
+      siteMaxWidth,
+    );
 
-        if (input !== null) {
-            const val = parseInt(input.trim(), 10);
-            if (!isNaN(val) && val >= 500 && val <= 4000) {
-                siteMaxWidth = val;
-                GM_setValue(keyWidth, val);
-                if (isEnabled) {
-                    applyStyles(true);
-                }
-                updateMenuCommands();
-                updateButtonAppearance();
-            } else {
-                alert('Please enter a valid number between 500 and 4000.');
-            }
+    if (input !== null) {
+      const val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 500 && val <= 4000) {
+        siteMaxWidth = val;
+        GM_setValue(keyWidth, val);
+        if (isEnabled) {
+          applyStyles(true);
         }
-    }
-
-    function toggleState() {
-        isEnabled = !isEnabled;
-        GM_setValue(keyEnabled, isEnabled);
-        applyStyles(isEnabled);
         updateMenuCommands();
         updateButtonAppearance();
+      } else {
+        alert("Please enter a valid number between 500 and 4000.");
+      }
     }
+  }
 
-    function updateButtonAppearance() {
-        if (!btn) return;
-        btn.style.display = showFloatingBtn ? 'flex' : 'none';
-        btn.innerHTML = isEnabled ? '📐' : '📏';
-        btn.style.background = isEnabled ? 'rgba(46, 125, 50, 0.9)' : 'rgba(40, 40, 40, 0.9)';
-        btn.title = `Width: ${siteMaxWidth}px\n• Left Click: Enable / Disable\n• Right Click: Change width`;
-    }
+  function toggleState() {
+    isEnabled = !isEnabled;
+    GM_setValue(keyEnabled, isEnabled);
+    applyStyles(isEnabled);
+    updateMenuCommands();
+    updateButtonAppearance();
+  }
 
-    function createToggleButton() {
-        if (!showFloatingBtn) return;
+  function updateButtonAppearance() {
+    if (!btn) return;
+    btn.style.display = showFloatingBtn ? "flex" : "none";
+    btn.innerHTML = isEnabled ? "📐" : "📏";
+    btn.style.background = isEnabled
+      ? "rgba(46, 125, 50, 0.9)"
+      : "rgba(40, 40, 40, 0.9)";
+    btn.title = `Width: ${siteMaxWidth}px\n• Left Click: Enable / Disable\n• Right Click: Change width`;
+  }
 
-        const parent = document.body || document.documentElement;
-        if (!parent) return;
+  function createToggleButton() {
+    if (!showFloatingBtn) return;
 
-        if (!btn) {
-            btn = document.createElement('div');
-            btn.id = 'tampermonkey-width-limiter-btn';
-            btn.style.cssText = `
+    const parent = document.body || document.documentElement;
+    if (!parent) return;
+
+    if (!btn) {
+      btn = document.createElement("div");
+      btn.id = "tampermonkey-width-limiter-btn";
+      btn.style.cssText = `
                 position: fixed !important;
                 bottom: 20px !important;
                 right: 20px !important;
@@ -222,56 +242,62 @@
                 pointer-events: auto !important;
             `;
 
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleState();
-            });
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleState();
+      });
 
-            btn.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                promptForWidth();
-            });
+      btn.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        promptForWidth();
+      });
 
-            btn.addEventListener('mouseenter', () => btn.style.transform = 'scale(1.1)');
-            btn.addEventListener('mouseleave', () => btn.style.transform = 'scale(1)');
-        }
-
-        updateButtonAppearance();
-
-        if (!document.getElementById('tampermonkey-width-limiter-btn')) {
-            parent.appendChild(btn);
-        }
+      btn.addEventListener(
+        "mouseenter",
+        () => (btn.style.transform = "scale(1.1)"),
+      );
+      btn.addEventListener(
+        "mouseleave",
+        () => (btn.style.transform = "scale(1)"),
+      );
     }
 
-    // Start
-    if (isEnabled) {
-        applyStyles(true);
-    }
-    updateMenuCommands();
+    updateButtonAppearance();
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', createToggleButton);
+    if (!document.getElementById("tampermonkey-width-limiter-btn")) {
+      parent.appendChild(btn);
+    }
+  }
+
+  // Start
+  if (isEnabled) {
+    applyStyles(true);
+  }
+  updateMenuCommands();
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", createToggleButton);
+  } else {
+    createToggleButton();
+  }
+
+  // Lightweight DOM observer for SPA navigation without CPU overhead
+  const observer = new MutationObserver(() => {
+    if (showFloatingBtn && (!btn || !document.contains(btn))) {
+      createToggleButton();
+    }
+  });
+
+  const startObserving = () => {
+    const target = document.body || document.documentElement;
+    if (target) {
+      // Only observe direct children additions/removals
+      observer.observe(target, { childList: true });
     } else {
-        createToggleButton();
+      setTimeout(startObserving, 100);
     }
-
-    // Lightweight DOM observer for SPA navigation without CPU overhead
-    const observer = new MutationObserver(() => {
-        if (showFloatingBtn && (!btn || !document.contains(btn))) {
-            createToggleButton();
-        }
-    });
-
-    const startObserving = () => {
-        const target = document.body || document.documentElement;
-        if (target) {
-            // Only observe direct children additions/removals
-            observer.observe(target, { childList: true });
-        } else {
-            setTimeout(startObserving, 100);
-        }
-    };
-    startObserving();
+  };
+  startObserving();
 })();
