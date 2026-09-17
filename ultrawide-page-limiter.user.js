@@ -22,21 +22,26 @@
 
   if (window.top !== window.self) return;
 
-  const DEFAULT_MAX_WIDTH = 1400;
   const STYLE_ELEMENT_ID = "uw-limiter-style";
-
+  const FALLBACK_DEFAULT_WIDTH = 1400;
   const currentDomain = window.location.hostname;
 
   const keyEnabled = `width_limit_${currentDomain}`;
   const keyWidth = `width_val_${currentDomain}`;
+  const keyGlobalWidth = "width_val_global_default";
   const keyShowButton = `show_floating_button_global`;
 
   let isEnabled = GM_getValue(keyEnabled, false);
-  let siteMaxWidth = GM_getValue(keyWidth, DEFAULT_MAX_WIDTH);
+  let globalDefaultWidth = GM_getValue(keyGlobalWidth, FALLBACK_DEFAULT_WIDTH);
+  let hasCustomSiteWidth = GM_getValue(keyWidth, null) !== null;
+  let siteMaxWidth = hasCustomSiteWidth
+    ? GM_getValue(keyWidth)
+    : globalDefaultWidth;
   let showFloatingBtn = GM_getValue(keyShowButton, true);
 
   let menuIdToggle = null;
   let menuIdWidth = null;
+  let menuIdGlobalWidth = null;
   let menuIdBtnVis = null;
   let btn = null;
 
@@ -136,6 +141,11 @@
       GM_unregisterMenuCommand(menuIdToggle);
     if (menuIdWidth !== null && typeof GM_unregisterMenuCommand === "function")
       GM_unregisterMenuCommand(menuIdWidth);
+    if (
+      menuIdGlobalWidth !== null &&
+      typeof GM_unregisterMenuCommand === "function"
+    )
+      GM_unregisterMenuCommand(menuIdGlobalWidth);
     if (menuIdBtnVis !== null && typeof GM_unregisterMenuCommand === "function")
       GM_unregisterMenuCommand(menuIdBtnVis);
 
@@ -145,8 +155,12 @@
         toggleState,
       );
       menuIdWidth = GM_registerMenuCommand(
-        `⚙️ Change width (${siteMaxWidth}px)`,
+        `⚙️ Site width (${siteMaxWidth}px)${hasCustomSiteWidth ? "" : " [global default]"}`,
         promptForWidth,
+      );
+      menuIdGlobalWidth = GM_registerMenuCommand(
+        `🌐 Global default width (${globalDefaultWidth}px)`,
+        promptForGlobalWidth,
       );
       menuIdBtnVis = GM_registerMenuCommand(
         showFloatingBtn
@@ -180,12 +194,42 @@
       const val = parseInt(input.trim(), 10);
       if (!isNaN(val) && val >= 500 && val <= 4000) {
         siteMaxWidth = val;
+        hasCustomSiteWidth = true;
         GM_setValue(keyWidth, val);
         if (isEnabled) {
           applyStyles(true);
         }
         updateMenuCommands();
         updateButtonAppearance();
+      } else {
+        alert("Please enter a valid number between 500 and 4000.");
+      }
+    }
+  }
+
+  function promptForGlobalWidth() {
+    const input = prompt(
+      `Default page width for all new sites (in pixels):\n` +
+        `Current global default: ${globalDefaultWidth}px\n` +
+        `Example: 1200, 1400, 1600`,
+      globalDefaultWidth,
+    );
+
+    if (input !== null) {
+      const val = parseInt(input.trim(), 10);
+      if (!isNaN(val) && val >= 500 && val <= 4000) {
+        globalDefaultWidth = val;
+        GM_setValue(keyGlobalWidth, val);
+
+        if (!hasCustomSiteWidth) {
+          siteMaxWidth = val;
+          if (isEnabled) {
+            applyStyles(true);
+          }
+          updateButtonAppearance();
+        }
+
+        updateMenuCommands();
       } else {
         alert("Please enter a valid number between 500 and 4000.");
       }
