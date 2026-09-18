@@ -46,70 +46,79 @@
   let btn = null;
 
   // Smart CSS generator for specific domains
-  function getCss(width) {
+  function getCss() {
     // 1. YouTube
     if (currentDomain.includes("youtube.com")) {
       return `
-                #page-manager,
-                #masthead-container,
-                ytd-mini-guide-renderer {
-                    max-width: ${width}px !important;
-                    margin-left: auto !important;
-                    margin-right: auto !important;
-                }
-                /* Shift the mini-sidebar to keep it in place */
-                ytd-mini-guide-renderer {
-                    left: calc(50% - ${width / 2}px) !important;
-                    margin-left: 0 !important;
-                }
-            `;
+          #page-manager,
+          #masthead-container,
+          ytd-mini-guide-renderer {
+              max-width: var(--uw-max-width) !important;
+              margin-left: auto !important;
+              margin-right: auto !important;
+          }
+          /* Shift the mini-sidebar to keep it in place */
+          ytd-mini-guide-renderer {
+              left: calc(50% - (var(--uw-max-width) / 2)) !important;
+              margin-left: 0 !important;
+          }
+      `;
     }
 
     // 2. Yandex (Search and services)
     if (currentDomain.includes("ya.ru") || currentDomain.includes("yandex.")) {
       return `
-                .HeaderDesktop-Content,
-                .HeaderContainer,
-                .main,
-                .content_type_search,
-                .Root-Header {
-                    max-width: ${width}px !important;
-                    margin-left: auto !important;
-                    margin-right: auto !important;
-                }
-            `;
+          .HeaderDesktop-Content,
+          .HeaderContainer,
+          .main,
+          .content_type_search,
+          .Root-Header {
+              max-width: var(--uw-max-width) !important;
+              margin-left: auto !important;
+              margin-right: auto !important;
+          }
+      `;
     }
 
     // 3. GitHub (considering the container layout)
     if (currentDomain.includes("github.com")) {
       return `
-                .application-main,
-                header[role="banner"],
-                .js-header-wrapper,
-                footer,
-                .container-lg {
-                    max-width: ${width}px !important;
-                    margin-left: auto !important;
-                    margin-right: auto !important;
-                    padding-left: 16px !important;
-                    padding-right: 16px !important;
-                }
-            `;
+          .application-main,
+          header[role="banner"],
+          .js-header-wrapper,
+          footer,
+          .container-lg {
+              max-width: var(--uw-max-width) !important;
+              margin-left: auto !important;
+              margin-right: auto !important;
+              padding-left: 16px !important;
+              padding-right: 16px !important;
+          }
+      `;
     }
 
     // 4. All other regular sites
     return `
-            html {
-                overflow-x: hidden !important;
-            }
-            body {
-                max-width: ${width}px !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-                box-shadow: 0 0 40px rgba(0, 0, 0, 0.15) !important;
-                min-height: 100vh !important;
-            }
-        `;
+        html {
+            overflow-x: hidden !important;
+        }
+        body {
+            max-width: var(--uw-max-width) !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.15) !important;
+            min-height: 100vh !important;
+        }
+    `;
+  }
+
+  function updateCssVariables() {
+    if (document.documentElement) {
+      document.documentElement.style.setProperty(
+        "--uw-max-width",
+        `${siteMaxWidth}px`,
+      );
+    }
   }
 
   function applyStyles(enable) {
@@ -122,13 +131,12 @@
       return;
     }
 
-    const css = getCss(siteMaxWidth);
-    if (existingStyle) {
-      existingStyle.textContent = css;
-    } else {
+    updateCssVariables();
+
+    if (!existingStyle) {
       const style = document.createElement("style");
       style.id = STYLE_ELEMENT_ID;
-      style.textContent = css;
+      style.textContent = getCss();
       const target = document.head || document.documentElement;
       if (target) {
         target.appendChild(style);
@@ -197,7 +205,7 @@
         hasCustomSiteWidth = true;
         GM_setValue(keyWidth, val);
         if (isEnabled) {
-          applyStyles(true);
+          updateCssVariables();
         }
         updateMenuCommands();
         updateButtonAppearance();
@@ -224,7 +232,7 @@
         if (!hasCustomSiteWidth) {
           siteMaxWidth = val;
           if (isEnabled) {
-            applyStyles(true);
+            updateCssVariables();
           }
           updateButtonAppearance();
         }
