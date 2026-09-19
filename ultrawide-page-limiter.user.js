@@ -45,11 +45,12 @@
   let menuIdBtnVis = null;
   let btn = null;
 
-  // Smart CSS generator for specific domains
-  function getCss() {
-    // 1. YouTube
-    if (currentDomain.includes("youtube.com")) {
-      return `
+  // Declarative site-specific adaptation rules
+  const SITE_RULES = [
+    {
+      name: "YouTube",
+      match: (domain) => domain.includes("youtube.com"),
+      css: `
           #page-manager,
           #masthead-container,
           ytd-mini-guide-renderer {
@@ -62,12 +63,12 @@
               left: calc(50% - (var(--uw-max-width) / 2)) !important;
               margin-left: 0 !important;
           }
-      `;
-    }
-
-    // 2. Yandex (Search and services)
-    if (currentDomain.includes("ya.ru") || currentDomain.includes("yandex.")) {
-      return `
+      `,
+    },
+    {
+      name: "Yandex",
+      match: (domain) => domain.includes("ya.ru") || domain.includes("yandex."),
+      css: `
           .HeaderDesktop-Content,
           .HeaderContainer,
           .main,
@@ -77,12 +78,12 @@
               margin-left: auto !important;
               margin-right: auto !important;
           }
-      `;
-    }
-
-    // 3. GitHub (considering the container layout)
-    if (currentDomain.includes("github.com")) {
-      return `
+      `,
+    },
+    {
+      name: "GitHub",
+      match: (domain) => domain.includes("github.com"),
+      css: `
           .application-main,
           header[role="banner"],
           .js-header-wrapper,
@@ -94,22 +95,26 @@
               padding-left: 16px !important;
               padding-right: 16px !important;
           }
-      `;
-    }
+      `,
+    },
+  ];
 
-    // 4. All other regular sites
-    return `
-        html {
-            overflow-x: hidden !important;
-        }
-        body {
-            max-width: var(--uw-max-width) !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.15) !important;
-            min-height: 100vh !important;
-        }
-    `;
+  const DEFAULT_FALLBACK_CSS = `
+      html {
+          overflow-x: hidden !important;
+      }
+      body {
+          max-width: var(--uw-max-width) !important;
+          margin-left: auto !important;
+          margin-right: auto !important;
+          box-shadow: 0 0 40px rgba(0, 0, 0, 0.15) !important;
+          min-height: 100vh !important;
+      }
+  `;
+
+  function getCss() {
+    const rule = SITE_RULES.find((item) => item.match(currentDomain));
+    return rule ? rule.css : DEFAULT_FALLBACK_CSS;
   }
 
   function updateCssVariables() {
