@@ -107,8 +107,10 @@
           max-width: var(--uw-max-width) !important;
           margin-left: auto !important;
           margin-right: auto !important;
-          box-shadow: 0 0 40px rgba(0, 0, 0, 0.15) !important;
+          position: relative !important;
+          box-sizing: border-box !important;
           min-height: 100vh !important;
+          box-shadow: 0 0 50px rgba(0, 0, 0, 0.2) !important;
       }
   `;
 
