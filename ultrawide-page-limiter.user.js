@@ -9,11 +9,12 @@
 // @downloadURL  https://raw.githubusercontent.com/goloveshko/ultrawide-page-limiter/main/ultrawide-page-limiter.user.js
 // @updateURL    https://raw.githubusercontent.com/goloveshko/ultrawide-page-limiter/main/ultrawide-page-limiter.user.js
 // @match        *://*/*
+// @grant        GM_setClipboard
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_openInTab
 // @grant        GM_registerMenuCommand
 // @grant        GM_unregisterMenuCommand
-// @grant        GM_setClipboard
 // @run-at       document-start
 // @license      MIT
 // ==/UserScript==
@@ -478,7 +479,12 @@
         encodeURIComponent(
           `[Site Layout] Broken or misaligned layout on ${currentDomain}`,
         );
-      window.open(issueUrl, "_blank");
+
+      if (typeof GM_openInTab === "function") {
+        GM_openInTab(issueUrl, { active: true, insert: true });
+      } else {
+        window.open(issueUrl, "_blank");
+      }
     }
   }
 
