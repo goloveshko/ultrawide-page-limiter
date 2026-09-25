@@ -52,18 +52,17 @@
       name: "Gmail",
       match: (domain) => domain.includes("mail.google.com"),
       css: `
-                /* Limit the main mail area (list & reading pane) without squashing sidebar and shell */
-                div[role="main"] {
+                /* Center the entire Gmail application (top bar + main workspace) */
+                #gb,
+                .bkK {
                     max-width: var(--uw-max-width) !important;
                     margin-left: auto !important;
                     margin-right: auto !important;
                 }
-                /* Constrain opened email message body for comfortable reading */
+                /* Ensure opened email reading view fits cleanly */
                 .a3s.aiL,
                 .adn.ads {
-                    max-width: var(--uw-max-width) !important;
-                    margin-left: auto !important;
-                    margin-right: auto !important;
+                    max-width: 100% !important;
                 }
             `,
     },
