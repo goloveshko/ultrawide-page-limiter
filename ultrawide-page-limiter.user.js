@@ -81,7 +81,7 @@
       name: "YouTube",
       match: (domain) => domain.includes("youtube.com"),
       css: `
-            /* Center fixed header */
+            /* 1. Center fixed header */
             #masthead-container {
                 left: 0 !important;
                 right: 0 !important;
@@ -91,30 +91,48 @@
                 margin-right: auto !important;
             }
 
-            /* 1. Full sidebar is open (wide screens, 240px) */
+            /* 2. Full sidebar is open (home/subscriptions on wide screens, 240px) */
             ytd-app[guide-persistent-and-visible] tp-yt-app-drawer#guide {
                 left: max(0px, calc(50% - (var(--uw-max-width) / 2))) !important;
             }
-            ytd-app[guide-persistent-and-visible] #page-manager {
+            ytd-app[guide-persistent-and-visible] #page-manager:not(:has(ytd-watch-flexy)) {
                 margin-left: max(240px, calc(50% - (var(--uw-max-width) / 2) + 240px)) !important;
                 max-width: calc(var(--uw-max-width) - 240px) !important;
             }
 
-            /* 2. Mini sidebar is open (collapsed, 72px) */
+            /* 3. Mini sidebar is open (collapsed, 72px) */
             ytd-app[mini-guide-visible] ytd-mini-guide-renderer {
                 left: max(0px, calc(50% - (var(--uw-max-width) / 2))) !important;
                 margin-left: 0 !important;
             }
-            ytd-app[mini-guide-visible] #page-manager {
+            ytd-app[mini-guide-visible] #page-manager:not(:has(ytd-watch-flexy)) {
                 margin-left: max(72px, calc(50% - (var(--uw-max-width) / 2) + 72px)) !important;
                 max-width: calc(var(--uw-max-width) - 72px) !important;
             }
 
-            /* 3. Watch page or views without persistent sidebars */
-            ytd-page-manager {
+            /* 4. Watch page (/watch?v=...): center player + comments */
+            ytd-watch-flexy:not([fullscreen]) #columns {
                 max-width: var(--uw-max-width) !important;
                 margin-left: auto !important;
                 margin-right: auto !important;
+            }
+
+            /* 5. FULLSCREEN: completely remove all limits for true full display */
+            [fullscreen] #page-manager,
+            [fullscreen] #masthead-container,
+            [fullscreen] #player-container,
+            [fullscreen] ytd-watch-flexy,
+            :fullscreen #page-manager,
+            :fullscreen #masthead-container,
+            :fullscreen #player-container,
+            :fullscreen ytd-watch-flexy,
+            :-webkit-full-screen #page-manager,
+            :-moz-full-screen #page-manager {
+                max-width: none !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                margin: 0 !important;
+                left: 0 !important;
             }
         `,
     },
