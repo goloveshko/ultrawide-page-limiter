@@ -364,9 +364,6 @@
                 .limiter-btn:active {
                     transform: scale(0.9);
                 }
-                :root:has(:fullscreen) #tampermonkey-width-limiter-host {
-                    display: none !important;
-                }
             `;
 
       btn = document.createElement("div");
@@ -469,7 +466,7 @@
       "#### DOM Metrics & Landmarks",
       table,
       "---",
-      "*Generated automatically by Wide Screen Content Limiter Pro*",
+      "*Generated automatically by Wide Screen Content Limiter*",
     ].join("\n");
   }
 
