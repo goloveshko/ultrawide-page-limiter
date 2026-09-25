@@ -81,19 +81,42 @@
       name: "YouTube",
       match: (domain) => domain.includes("youtube.com"),
       css: `
-                #page-manager,
-                #masthead-container,
-                ytd-mini-guide-renderer {
-                    max-width: var(--uw-max-width) !important;
-                    margin-left: auto !important;
-                    margin-right: auto !important;
-                }
-                /* Shift the mini-sidebar to keep it in place */
-                ytd-mini-guide-renderer {
-                    left: calc(50% - (var(--uw-max-width) / 2)) !important;
-                    margin-left: 0 !important;
-                }
-            `,
+            /* Center fixed header */
+            #masthead-container {
+                left: 0 !important;
+                right: 0 !important;
+                width: auto !important;
+                max-width: var(--uw-max-width) !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+
+            /* 1. Full sidebar is open (wide screens, 240px) */
+            ytd-app[guide-persistent-and-visible] tp-yt-app-drawer#guide {
+                left: max(0px, calc(50% - (var(--uw-max-width) / 2))) !important;
+            }
+            ytd-app[guide-persistent-and-visible] #page-manager {
+                margin-left: max(240px, calc(50% - (var(--uw-max-width) / 2) + 240px)) !important;
+                max-width: calc(var(--uw-max-width) - 240px) !important;
+            }
+
+            /* 2. Mini sidebar is open (collapsed, 72px) */
+            ytd-app[mini-guide-visible] ytd-mini-guide-renderer {
+                left: max(0px, calc(50% - (var(--uw-max-width) / 2))) !important;
+                margin-left: 0 !important;
+            }
+            ytd-app[mini-guide-visible] #page-manager {
+                margin-left: max(72px, calc(50% - (var(--uw-max-width) / 2) + 72px)) !important;
+                max-width: calc(var(--uw-max-width) - 72px) !important;
+            }
+
+            /* 3. Watch page or views without persistent sidebars */
+            ytd-page-manager {
+                max-width: var(--uw-max-width) !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+        `,
     },
     {
       name: "Yandex",
