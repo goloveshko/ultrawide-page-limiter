@@ -43,6 +43,7 @@
   let menuIdWidth = null;
   let menuIdGlobalWidth = null;
   let menuIdBtnVis = null;
+  let host = null;
   let btn = null;
 
   // Declarative site-specific adaptation rules
@@ -190,8 +191,8 @@
     showFloatingBtn = !showFloatingBtn;
     GM_setValue(keyShowButton, showFloatingBtn);
 
-    if (btn) {
-      btn.style.display = showFloatingBtn ? "flex" : "none";
+    if (host) {
+      host.style.display = showFloatingBtn ? "block" : "none";
     } else if (showFloatingBtn) {
       createToggleButton();
     }
@@ -260,8 +261,8 @@
   }
 
   function updateButtonAppearance() {
-    if (!btn) return;
-    btn.style.display = showFloatingBtn ? "flex" : "none";
+    if (!btn || !host) return;
+    host.style.display = showFloatingBtn ? "block" : "none";
     btn.innerHTML = isEnabled ? "📐" : "📏";
     btn.style.background = isEnabled
       ? "rgba(46, 125, 50, 0.9)"
@@ -275,31 +276,52 @@
     const parent = document.body || document.documentElement;
     if (!parent) return;
 
-    if (!btn) {
+    if (!host) {
+      host = document.createElement("div");
+      host.id = "tampermonkey-width-limiter-host";
+      host.style.cssText = `
+                  position: fixed !important;
+                  bottom: 20px !important;
+                  right: 20px !important;
+                  width: 44px !important;
+                  height: 44px !important;
+                  z-index: 2147483647 !important;
+                  pointer-events: auto !important;
+              `;
+
+      const shadow = host.attachShadow({ mode: "open" });
+
+      const shadowStyle = document.createElement("style");
+      shadowStyle.textContent = `
+                  .limiter-btn {
+                      all: initial;
+                      width: 44px;
+                      height: 44px;
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      cursor: pointer;
+                      font-size: 22px;
+                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+                      transition: transform 0.15s ease, background 0.2s ease;
+                      user-select: none;
+                      -webkit-user-select: none;
+                      backdrop-filter: blur(4px);
+                      border: 2px solid rgba(255, 255, 255, 0.2);
+                      color: #ffffff;
+                      box-sizing: border-box;
+                  }
+                  .limiter-btn:hover {
+                      transform: scale(1.1);
+                  }
+                  .limiter-btn:active {
+                      transform: scale(0.9);
+                  }
+              `;
+
       btn = document.createElement("div");
-      btn.id = "tampermonkey-width-limiter-btn";
-      btn.style.cssText = `
-                position: fixed !important;
-                bottom: 20px !important;
-                right: 20px !important;
-                width: 44px !important;
-                height: 44px !important;
-                border-radius: 50% !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                cursor: pointer !important;
-                z-index: 2147483647 !important;
-                font-size: 22px !important;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-                transition: transform 0.2s ease, background 0.2s ease !important;
-                user-select: none !important;
-                -webkit-user-select: none !important;
-                backdrop-filter: blur(4px) !important;
-                border: 2px solid rgba(255, 255, 255, 0.2) !important;
-                color: #ffffff !important;
-                pointer-events: auto !important;
-            `;
+      btn.className = "limiter-btn";
 
       btn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -313,20 +335,14 @@
         promptForWidth();
       });
 
-      btn.addEventListener(
-        "mouseenter",
-        () => (btn.style.transform = "scale(1.1)"),
-      );
-      btn.addEventListener(
-        "mouseleave",
-        () => (btn.style.transform = "scale(1)"),
-      );
+      shadow.appendChild(shadowStyle);
+      shadow.appendChild(btn);
     }
 
     updateButtonAppearance();
 
-    if (!document.getElementById("tampermonkey-width-limiter-btn")) {
-      parent.appendChild(btn);
+    if (!document.getElementById("tampermonkey-width-limiter-host")) {
+      parent.appendChild(host);
     }
   }
 
@@ -344,7 +360,7 @@
 
   // Lightweight DOM observer for SPA navigation without CPU overhead
   const observer = new MutationObserver(() => {
-    if (showFloatingBtn && (!btn || !document.contains(btn))) {
+    if (showFloatingBtn && (!host || !document.contains(host))) {
       createToggleButton();
     }
   });
