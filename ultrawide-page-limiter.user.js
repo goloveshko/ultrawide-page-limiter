@@ -52,19 +52,27 @@
       name: "Gmail",
       match: (domain) => domain.includes("mail.google.com"),
       css: `
-                /* Center the entire Gmail application (top bar + main workspace) */
-                #gb,
-                .bkK {
-                    max-width: var(--uw-max-width) !important;
-                    margin-left: auto !important;
-                    margin-right: auto !important;
-                }
-                /* Ensure opened email reading view fits cleanly */
-                .a3s.aiL,
-                .adn.ads {
-                    max-width: 100% !important;
-                }
-            `,
+            /* Center Gmail top bar */
+            #gb {
+                max-width: var(--uw-max-width) !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+
+            /* Center the true workspace container holding sidebar (.bkL) and emails (.aeF) */
+            div:has(> .bkL),
+            div:has(> .aeF) {
+                max-width: var(--uw-max-width) !important;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+
+            /* Ensure opened email reading view fits cleanly */
+            .a3s.aiL,
+            .adn.ads {
+                max-width: 100% !important;
+            }
+        `,
     },
     {
       name: "YouTube",
