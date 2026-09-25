@@ -13,6 +13,7 @@
 // @grant        GM_setValue
 // @grant        GM_registerMenuCommand
 // @grant        GM_unregisterMenuCommand
+// @grant        GM_setClipboard
 // @run-at       document-start
 // @license      MIT
 // ==/UserScript==
@@ -43,6 +44,7 @@
   let menuIdWidth = null;
   let menuIdGlobalWidth = null;
   let menuIdBtnVis = null;
+  let menuIdReport = null;
   let host = null;
   let btn = null;
 
@@ -190,6 +192,8 @@
       GM_unregisterMenuCommand(menuIdGlobalWidth);
     if (menuIdBtnVis !== null && typeof GM_unregisterMenuCommand === "function")
       GM_unregisterMenuCommand(menuIdBtnVis);
+    if (menuIdReport !== null && typeof GM_unregisterMenuCommand === "function")
+      GM_unregisterMenuCommand(menuIdReport);
 
     if (typeof GM_registerMenuCommand === "function") {
       menuIdToggle = GM_registerMenuCommand(
@@ -209,6 +213,10 @@
           ? "👁️ Floating button: ON (click to hide)"
           : "🙈 Floating button: OFF (click to show)",
         toggleButtonVisibility,
+      );
+      menuIdReport = GM_registerMenuCommand(
+        "🐛 Report layout issue / Copy debug info",
+        copySiteDiagnostics,
       );
     }
   }
@@ -369,6 +377,108 @@
 
     if (!document.getElementById("tampermonkey-width-limiter-host")) {
       parent.appendChild(host);
+    }
+  }
+
+  function getElementMetrics(el, label) {
+    if (!el) return null;
+    const s = window.getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    const classes =
+      el.className && typeof el.className === "string"
+        ? el.className.trim().split(/\s+/).slice(0, 4).join(".")
+        : "";
+    return {
+      label,
+      tag: el.tagName.toLowerCase(),
+      selector:
+        `${el.id ? "#" + el.id : ""}${classes ? "." + classes : ""}` ||
+        "(none)",
+      display: s.display,
+      position: s.position,
+      dimensions: `${Math.round(rect.width)}x${Math.round(rect.height)}px`,
+      left: `${Math.round(rect.left)}px`,
+      margin: `${s.marginTop} ${s.marginRight} ${s.marginBottom} ${s.marginLeft}`,
+    };
+  }
+
+  function collectDiagnostics() {
+    const metrics = [];
+
+    // 1. Root elements
+    metrics.push(getElementMetrics(document.documentElement, "html"));
+    metrics.push(getElementMetrics(document.body, "body"));
+
+    // 2. Landmarks
+    const landmarks = [
+      { sel: 'header, [role="banner"]', label: "header" },
+      { sel: 'nav, [role="navigation"]', label: "nav" },
+      { sel: 'main, [role="main"]', label: "main" },
+      { sel: 'aside, [role="complementary"]', label: "aside" },
+    ];
+
+    landmarks.forEach(({ sel, label }) => {
+      const el = document.querySelector(sel);
+      if (el) metrics.push(getElementMetrics(el, label));
+    });
+
+    // 3. Top-level body containers
+    if (document.body) {
+      Array.from(document.body.children)
+        .slice(0, 6)
+        .forEach((child, i) => {
+          if (
+            child.id !== "tampermonkey-width-limiter-host" &&
+            child.tagName !== "SCRIPT" &&
+            child.tagName !== "STYLE"
+          ) {
+            metrics.push(getElementMetrics(child, `body > child[${i}]`));
+          }
+        });
+    }
+
+    // Build Markdown table
+    let table =
+      "| Block | Tag | Selector | Display | Position | Width x Height | Left | Margin |\n";
+    table += "|---|---|---|---|---|---|---|---|\n";
+    metrics.filter(Boolean).forEach((m) => {
+      table += `| **${m.label}** | \`${m.tag}\` | \`${m.selector}\` | ${m.display} | ${m.position} | ${m.dimensions} | ${m.left} | ${m.margin} |\n`;
+    });
+
+    return [
+      `### 🐛 Layout Diagnostic Report: \`${currentDomain}\``,
+      `- **URL:** ${window.location.href}`,
+      `- **Viewport:** ${window.innerWidth}x${window.innerHeight} (DPR: ${window.devicePixelRatio || 1})`,
+      `- **Settings:** Enabled: \`${isEnabled}\`, Site Width: \`${siteMaxWidth}px\`, Global Default: \`${globalDefaultWidth}px\``,
+      "",
+      "#### DOM Metrics & Landmarks",
+      table,
+      "---",
+      "*Generated automatically by Wide Screen Content Limiter Pro*",
+    ].join("\n");
+  }
+
+  function copySiteDiagnostics() {
+    const report = collectDiagnostics();
+
+    if (typeof GM_setClipboard === "function") {
+      GM_setClipboard(report);
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(report);
+    }
+
+    const openIssue = confirm(
+      `📋 Diagnostic report for "${currentDomain}" has been copied to your clipboard!\n\n` +
+        `Would you like to open GitHub Issues now to paste it and submit a report?`,
+    );
+
+    if (openIssue) {
+      const issueUrl =
+        `https://github.com/goloveshko/ultrawide-page-limiter/issues/new?title=` +
+        encodeURIComponent(
+          `[Site Layout] Broken or misaligned layout on ${currentDomain}`,
+        );
+      window.open(issueUrl, "_blank");
     }
   }
 
