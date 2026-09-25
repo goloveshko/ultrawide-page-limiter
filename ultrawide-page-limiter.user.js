@@ -263,7 +263,7 @@
   function updateButtonAppearance() {
     if (!btn || !host) return;
     host.style.display = showFloatingBtn ? "block" : "none";
-    btn.innerHTML = isEnabled ? "📐" : "📏";
+    btn.textContent = isEnabled ? "📐" : "📏";
     btn.style.background = isEnabled
       ? "rgba(46, 125, 50, 0.9)"
       : "rgba(40, 40, 40, 0.9)";
@@ -273,7 +273,7 @@
   function createToggleButton() {
     if (!showFloatingBtn) return;
 
-    const parent = document.body || document.documentElement;
+    const parent = document.documentElement || document.body;
     if (!parent) return;
 
     if (!host) {
