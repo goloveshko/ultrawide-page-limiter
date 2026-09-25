@@ -49,6 +49,25 @@
   // Declarative site-specific adaptation rules
   const SITE_RULES = [
     {
+      name: "Gmail",
+      match: (domain) => domain.includes("mail.google.com"),
+      css: `
+                /* Limit the main mail area (list & reading pane) without squashing sidebar and shell */
+                div[role="main"] {
+                    max-width: var(--uw-max-width) !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                }
+                /* Constrain opened email message body for comfortable reading */
+                .a3s.aiL,
+                .adn.ads {
+                    max-width: var(--uw-max-width) !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                }
+            `,
+    },
+    {
       name: "YouTube",
       match: (domain) => domain.includes("youtube.com"),
       css: `
@@ -102,7 +121,7 @@
 
   const DEFAULT_FALLBACK_CSS = `
         html {
-            overflow-x: hidden !important;
+            overflow-x: clip;
         }
         body {
             max-width: var(--uw-max-width) !important;
