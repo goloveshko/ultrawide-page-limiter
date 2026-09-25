@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wide Screen Content Limiter Pro
 // @namespace    https://github.com/goloveshko/ultrawide-page-limiter
-// @version      1.9
+// @version      2.0
 // @description  Limits page width with adaptations for YouTube, Yandex, GitHub and other sites
 // @author       goloveshko
 // @homepageURL  https://github.com/goloveshko/ultrawide-page-limiter
@@ -52,68 +52,68 @@
       name: "YouTube",
       match: (domain) => domain.includes("youtube.com"),
       css: `
-          #page-manager,
-          #masthead-container,
-          ytd-mini-guide-renderer {
-              max-width: var(--uw-max-width) !important;
-              margin-left: auto !important;
-              margin-right: auto !important;
-          }
-          /* Shift the mini-sidebar to keep it in place */
-          ytd-mini-guide-renderer {
-              left: calc(50% - (var(--uw-max-width) / 2)) !important;
-              margin-left: 0 !important;
-          }
-      `,
+                #page-manager,
+                #masthead-container,
+                ytd-mini-guide-renderer {
+                    max-width: var(--uw-max-width) !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                }
+                /* Shift the mini-sidebar to keep it in place */
+                ytd-mini-guide-renderer {
+                    left: calc(50% - (var(--uw-max-width) / 2)) !important;
+                    margin-left: 0 !important;
+                }
+            `,
     },
     {
       name: "Yandex",
       match: (domain) => domain.includes("ya.ru") || domain.includes("yandex."),
       css: `
-          .HeaderDesktop-Content,
-          .HeaderContainer,
-          .main,
-          .content_type_search,
-          .Root-Header {
-              max-width: var(--uw-max-width) !important;
-              margin-left: auto !important;
-              margin-right: auto !important;
-          }
-      `,
+                .HeaderDesktop-Content,
+                .HeaderContainer,
+                .main,
+                .content_type_search,
+                .Root-Header {
+                    max-width: var(--uw-max-width) !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                }
+            `,
     },
     {
       name: "GitHub",
       match: (domain) => domain.includes("github.com"),
       css: `
-          .application-main,
-          header[role="banner"],
-          .js-header-wrapper,
-          footer,
-          .container-lg {
-              max-width: var(--uw-max-width) !important;
-              margin-left: auto !important;
-              margin-right: auto !important;
-              padding-left: 16px !important;
-              padding-right: 16px !important;
-          }
-      `,
+                .application-main,
+                header[role="banner"],
+                .js-header-wrapper,
+                footer,
+                .container-lg {
+                    max-width: var(--uw-max-width) !important;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    padding-left: 16px !important;
+                    padding-right: 16px !important;
+                }
+            `,
     },
   ];
 
   const DEFAULT_FALLBACK_CSS = `
-      html {
-          overflow-x: hidden !important;
-      }
-      body {
-          max-width: var(--uw-max-width) !important;
-          margin-left: auto !important;
-          margin-right: auto !important;
-          position: relative !important;
-          box-sizing: border-box !important;
-          min-height: 100vh !important;
-          box-shadow: 0 0 50px rgba(0, 0, 0, 0.2) !important;
-      }
-  `;
+        html {
+            overflow-x: hidden !important;
+        }
+        body {
+            max-width: var(--uw-max-width) !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            position: relative !important;
+            box-sizing: border-box !important;
+            min-height: 100vh !important;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.2) !important;
+        }
+    `;
 
   function getCss() {
     const rule = SITE_RULES.find((item) => item.match(currentDomain));
@@ -280,45 +280,45 @@
       host = document.createElement("div");
       host.id = "tampermonkey-width-limiter-host";
       host.style.cssText = `
-                  position: fixed !important;
-                  bottom: 20px !important;
-                  right: 20px !important;
-                  width: 44px !important;
-                  height: 44px !important;
-                  z-index: 2147483647 !important;
-                  pointer-events: auto !important;
-              `;
+                position: fixed !important;
+                bottom: 20px !important;
+                right: 20px !important;
+                width: 44px !important;
+                height: 44px !important;
+                z-index: 2147483647 !important;
+                pointer-events: auto !important;
+            `;
 
       const shadow = host.attachShadow({ mode: "open" });
 
       const shadowStyle = document.createElement("style");
       shadowStyle.textContent = `
-                  .limiter-btn {
-                      all: initial;
-                      width: 44px;
-                      height: 44px;
-                      border-radius: 50%;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      cursor: pointer;
-                      font-size: 22px;
-                      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-                      transition: transform 0.15s ease, background 0.2s ease;
-                      user-select: none;
-                      -webkit-user-select: none;
-                      backdrop-filter: blur(4px);
-                      border: 2px solid rgba(255, 255, 255, 0.2);
-                      color: #ffffff;
-                      box-sizing: border-box;
-                  }
-                  .limiter-btn:hover {
-                      transform: scale(1.1);
-                  }
-                  .limiter-btn:active {
-                      transform: scale(0.9);
-                  }
-              `;
+                .limiter-btn {
+                    all: initial;
+                    width: 44px;
+                    height: 44px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    font-size: 22px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+                    transition: transform 0.15s ease, background 0.2s ease;
+                    user-select: none;
+                    -webkit-user-select: none;
+                    backdrop-filter: blur(4px);
+                    border: 2px solid rgba(255, 255, 255, 0.2);
+                    color: #ffffff;
+                    box-sizing: border-box;
+                }
+                .limiter-btn:hover {
+                    transform: scale(1.1);
+                }
+                .limiter-btn:active {
+                    transform: scale(0.9);
+                }
+            `;
 
       btn = document.createElement("div");
       btn.className = "limiter-btn";
@@ -358,7 +358,7 @@
     createToggleButton();
   }
 
-  // Lightweight DOM observer for SPA navigation without CPU overhead
+  // DOM observer for SPA navigation
   const observer = new MutationObserver(() => {
     if (showFloatingBtn && (!host || !document.contains(host))) {
       createToggleButton();
@@ -368,7 +368,6 @@
   const startObserving = () => {
     const target = document.body || document.documentElement;
     if (target) {
-      // Only observe direct children additions/removals
       observer.observe(target, { childList: true });
     } else {
       setTimeout(startObserving, 100);
