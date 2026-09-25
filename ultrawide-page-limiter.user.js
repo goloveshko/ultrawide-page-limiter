@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Wide Screen Content Limiter Pro
 // @namespace    https://github.com/goloveshko/ultrawide-page-limiter
-// @version      2.0
+// @version      2.1
 // @description  Limits page width with adaptations for YouTube, Yandex, GitHub and other sites
 // @author       goloveshko
 // @homepageURL  https://github.com/goloveshko/ultrawide-page-limiter
@@ -474,7 +474,18 @@
   }
 
   function copySiteDiagnostics() {
+    const wasEnabled = isEnabled;
+
+    if (wasEnabled) {
+      applyStyles(false);
+      void document.documentElement.offsetHeight;
+    }
+
     const report = collectDiagnostics();
+
+    if (wasEnabled) {
+      applyStyles(true);
+    }
 
     if (typeof GM_setClipboard === "function") {
       GM_setClipboard(report);
