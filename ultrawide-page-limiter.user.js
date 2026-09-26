@@ -1,8 +1,10 @@
 // ==UserScript==
 // @name         Wide Screen Content Limiter
+// @name:ru      Wide Screen Content Limiter
 // @namespace    https://github.com/goloveshko/ultrawide-page-limiter
 // @version      2.1
 // @description  Limits page width with adaptations for YouTube, Yandex, GitHub and other sites
+// @description:ru Ограничивает ширину страниц с адаптацией для YouTube, Gmail, Yandex, GitHub и других сайтов
 // @author       goloveshko
 // @homepageURL  https://github.com/goloveshko/ultrawide-page-limiter
 // @supportURL   https://github.com/goloveshko/ultrawide-page-limiter/issues
