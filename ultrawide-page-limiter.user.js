@@ -2,7 +2,7 @@
 // @name         Wide Screen Content Limiter
 // @name:ru      Ограничитель ширины контента для широких экранов
 // @namespace    https://github.com/goloveshko/ultrawide-page-limiter
-// @version      2.1
+// @version      2.2
 // @description  Limits page width with adaptations for YouTube, Yandex, GitHub and other sites
 // @description:ru Ограничивает ширину страниц с адаптацией для YouTube, Gmail, Yandex, GitHub и других сайтов
 // @author       goloveshko
@@ -14,6 +14,7 @@
 // @grant        GM_setClipboard
 // @grant        GM_getValue
 // @grant        GM_setValue
+// @grant        GM_deleteValue
 // @grant        GM_openInTab
 // @grant        GM_registerMenuCommand
 // @grant        GM_unregisterMenuCommand
@@ -160,6 +161,13 @@
             min-height: 100vh !important;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.2) !important;
         }
+        :root:has(:fullscreen) body,
+        html:fullscreen body,
+        body:fullscreen {
+            max-width: none !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+        }
     `;
 
   function getCss() {
@@ -255,12 +263,37 @@
   function promptForWidth() {
     const input = prompt(
       `Page width for ${currentDomain} (in pixels):\n` +
+        `Enter 0 or "reset" to use global default (${globalDefaultWidth}px)\n` +
         `Example: 1200, 1400, 1600`,
-      siteMaxWidth,
+      hasCustomSiteWidth ? siteMaxWidth : "",
     );
 
     if (input !== null) {
-      const val = parseInt(input.trim(), 10);
+      const trimmed = input.trim().toLowerCase();
+
+      // Reset to global default
+      if (
+        trimmed === "0" ||
+        trimmed === "reset" ||
+        trimmed === "default" ||
+        trimmed === ""
+      ) {
+        hasCustomSiteWidth = false;
+        siteMaxWidth = globalDefaultWidth;
+        if (typeof GM_deleteValue === "function") {
+          GM_deleteValue(keyWidth);
+        } else {
+          GM_setValue(keyWidth, null);
+        }
+        if (isEnabled) {
+          updateCssVariables();
+        }
+        updateMenuCommands();
+        updateButtonAppearance();
+        return;
+      }
+
+      const val = parseInt(trimmed, 10);
       if (!isNaN(val) && val >= 500 && val <= 4000) {
         siteMaxWidth = val;
         hasCustomSiteWidth = true;
@@ -271,7 +304,9 @@
         updateMenuCommands();
         updateButtonAppearance();
       } else {
-        alert("Please enter a valid number between 500 and 4000.");
+        alert(
+          "Please enter a valid number between 500 and 4000 (or 0 to reset).",
+        );
       }
     }
   }
