@@ -51,11 +51,17 @@
   let host = null;
   let btn = null;
 
+  // Substring matching would also hit lookalike hosts ("evilgithub.com",
+  // "notya.ru"); match the hostname against the registrable domain instead
+  function matchesDomain(domain, base) {
+    return domain === base || domain.endsWith(`.${base}`);
+  }
+
   // Declarative site-specific adaptation rules
   const SITE_RULES = [
     {
       name: "Gmail",
-      match: (domain) => domain.includes("mail.google.com"),
+      match: (domain) => matchesDomain(domain, "mail.google.com"),
       css: `
             /* Center Gmail top bar */
             #gb {
@@ -81,7 +87,7 @@
     },
     {
       name: "YouTube",
-      match: (domain) => domain.includes("youtube.com"),
+      match: (domain) => matchesDomain(domain, "youtube.com"),
       css: `
             /* 1. Constrain video feeds (Home, Subscriptions, Channels) */
             ytd-two-column-browse-results-renderer,
@@ -108,7 +114,8 @@
     },
     {
       name: "Yandex",
-      match: (domain) => domain.includes("ya.ru") || domain.includes("yandex."),
+      match: (domain) =>
+        matchesDomain(domain, "ya.ru") || /(^|\.)yandex\.[a-z]+$/.test(domain),
       css: `
                 .HeaderDesktop-Content,
                 .HeaderContainer,
@@ -123,7 +130,7 @@
     },
     {
       name: "GitHub",
-      match: (domain) => domain.includes("github.com"),
+      match: (domain) => matchesDomain(domain, "github.com"),
       css: `
                 .application-main,
                 header[role="banner"],
