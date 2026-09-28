@@ -548,8 +548,9 @@
     }
   });
 
+  // The button host is mounted on <html>, so observe documentElement children
   const startObserving = () => {
-    const target = document.body || document.documentElement;
+    const target = document.documentElement;
     if (target) {
       observer.observe(target, { childList: true });
     } else {
