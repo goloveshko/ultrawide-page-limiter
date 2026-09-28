@@ -1,6 +1,6 @@
 # Wide Screen Content Limiter
 
-[![Version](https://img.shields.io/badge/версия-2.1-blue.svg)](https://github.com/goloveshko/ultrawide-page-limiter)
+[![Version](https://img.shields.io/badge/версия-2.2-blue.svg)](https://github.com/goloveshko/ultrawide-page-limiter)
 [![License: MIT](https://img.shields.io/badge/Лицензия-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Supported Managers](https://img.shields.io/badge/юзерскрипт-Tampermonkey%20%7C%20Violentmonkey-green.svg)](#установка)
 
@@ -64,7 +64,7 @@
 </p>
 
 - 📏 **Enable / Disable width limit:** Включение или отключение ограничения для текущего сайта.
-- ⚙️ **Site width (`...px`):** Задать персональную ширину для текущего сайта.
+- ⚙️ **Site width (`...px`):** Задать персональную ширину для текущего сайта. Введите `0` или `reset`, чтобы вернуться к глобальной ширине по умолчанию.
 - 🌐 **Global default width (`...px`):** Задать ширину по умолчанию для всех новых сайтов.
 - 👁️ **Floating button visibility:** Показать или скрыть плавающую кнопку глобально.
 - 🐛 **Report layout issue / Copy debug info:** Просканировать чистую нативную верстку сайта, скопировать отчет в буфер обмена и открыть страницу создания Issue на GitHub.

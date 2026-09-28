@@ -1,6 +1,6 @@
 # Wide Screen Content Limiter
 
-[![Version](https://img.shields.io/badge/version-2.1-blue.svg)](https://github.com/goloveshko/ultrawide-page-limiter)
+[![Version](https://img.shields.io/badge/version-2.2-blue.svg)](https://github.com/goloveshko/ultrawide-page-limiter)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Supported Managers](https://img.shields.io/badge/userscript-Tampermonkey%20%7C%20Violentmonkey-green.svg)](#installation)
 
@@ -64,7 +64,7 @@ Access quick actions directly from your userscript manager icon in the browser t
 </p>
 
 - 📏 **Enable / Disable width limit:** Toggles state for the current domain.
-- ⚙️ **Site width (`...px`):** Set custom pixel width for the current site.
+- ⚙️ **Site width (`...px`):** Set custom pixel width for the current site. Enter `0` or `reset` to fall back to the global default.
 - 🌐 **Global default width (`...px`):** Set default width for all new sites.
 - 👁️ **Floating button visibility:** Show or hide the bottom-right button globally.
 - 🐛 **Report layout issue / Copy debug info:** Automatically inspects the page, copies clean layout diagnostics to clipboard, and prompts to open a GitHub Issue.
