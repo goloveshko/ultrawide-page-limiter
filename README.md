@@ -22,11 +22,11 @@ Browsing the web on an ultrawide or super-ultrawide monitor often results in unr
 
 - **⚡ Zero Layout Flash (`@run-at document-start`):** Pre-applies constraints before the page finishes rendering to prevent visual flickering.
 - **🎨 Dynamic CSS Variables (`--uw-max-width`):** Live width resizing without re-parsing stylesheets or reloading the page.
-- **🛡️ Isolated Floating Control:** Floating toggle button lives inside an open **Shadow DOM** and uses CSP-safe methods, completely immune to aggressive page CSS resets and Trusted Types restrictions.
+- **🛡️ Isolated Floating Control:** Floating toggle button lives inside an open **Shadow DOM** and uses CSP-safe DOM rendering (`textContent`, no `innerHTML`) for the floating UI — immune to aggressive page CSS resets and Trusted Types restrictions.
 - **🎬 Fullscreen Aware:** Automatically hides the floating control and unlocks 100% viewport width whenever video playback enters fullscreen mode.
 - **📐 Hierarchy Configuration:** Per-domain custom widths fall back to a user-defined Global Default Width, and then to `1400px`.
 - **🧩 Smart Site Adaptations:** Dedicated declarative layouts for complex SPAs:
-  - **YouTube:** Centers video feeds, docks 240px and 72px sidebars seamlessly without overlap, supports theater mode, and unlocks full 100% display in fullscreen.
+  - **YouTube:** Centers the video feeds and the watch player, supports theater mode, and unlocks full 100% display in fullscreen.
   - **Gmail:** Keeps the navigation sidebar, compose button, and email card docked as a unified centered unit using modern `:has()` selectors.
   - **GitHub & Yandex:** Aligns headers, search bars, and repository views.
   - **Universal Fallback:** Modern `overflow-x: clip` container with positioning context for all regular websites.
@@ -89,7 +89,7 @@ Adding custom support for a website is straightforward thanks to the declarative
 ```javascript
 {
     name: 'ExampleSite',
-    match: (domain) => domain.includes('example.com'),
+    match: (domain) => matchesDomain(domain, 'example.com'),
     css: `
         .main-container,
         header {
