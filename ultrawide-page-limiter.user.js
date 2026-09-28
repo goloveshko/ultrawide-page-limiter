@@ -44,11 +44,13 @@
     : globalDefaultWidth;
   let showFloatingBtn = GM_getValue(keyShowButton, true);
 
-  let menuIdToggle = null;
-  let menuIdWidth = null;
-  let menuIdGlobalWidth = null;
-  let menuIdBtnVis = null;
-  let menuIdReport = null;
+  const menuIds = {
+    toggle: null,
+    width: null,
+    globalWidth: null,
+    btnVis: null,
+    report: null,
+  };
   let host = null;
   let btn = null;
 
@@ -208,40 +210,35 @@
   }
 
   function updateMenuCommands() {
-    if (menuIdToggle !== null && typeof GM_unregisterMenuCommand === "function")
-      GM_unregisterMenuCommand(menuIdToggle);
-    if (menuIdWidth !== null && typeof GM_unregisterMenuCommand === "function")
-      GM_unregisterMenuCommand(menuIdWidth);
-    if (
-      menuIdGlobalWidth !== null &&
-      typeof GM_unregisterMenuCommand === "function"
-    )
-      GM_unregisterMenuCommand(menuIdGlobalWidth);
-    if (menuIdBtnVis !== null && typeof GM_unregisterMenuCommand === "function")
-      GM_unregisterMenuCommand(menuIdBtnVis);
-    if (menuIdReport !== null && typeof GM_unregisterMenuCommand === "function")
-      GM_unregisterMenuCommand(menuIdReport);
+    if (typeof GM_unregisterMenuCommand === "function") {
+      for (const key of Object.keys(menuIds)) {
+        if (menuIds[key] != null) {
+          GM_unregisterMenuCommand(menuIds[key]);
+          menuIds[key] = null;
+        }
+      }
+    }
 
     if (typeof GM_registerMenuCommand === "function") {
-      menuIdToggle = GM_registerMenuCommand(
+      menuIds.toggle = GM_registerMenuCommand(
         isEnabled ? "❌ Disable width limit" : "📏 Enable width limit",
         toggleState,
       );
-      menuIdWidth = GM_registerMenuCommand(
+      menuIds.width = GM_registerMenuCommand(
         `⚙️ Site width (${siteMaxWidth}px)${hasCustomSiteWidth ? "" : " [global default]"}`,
         promptForWidth,
       );
-      menuIdGlobalWidth = GM_registerMenuCommand(
+      menuIds.globalWidth = GM_registerMenuCommand(
         `🌐 Global default width (${globalDefaultWidth}px)`,
         promptForGlobalWidth,
       );
-      menuIdBtnVis = GM_registerMenuCommand(
+      menuIds.btnVis = GM_registerMenuCommand(
         showFloatingBtn
           ? "👁️ Floating button: ON (click to hide)"
           : "🙈 Floating button: OFF (click to show)",
         toggleButtonVisibility,
       );
-      menuIdReport = GM_registerMenuCommand(
+      menuIds.report = GM_registerMenuCommand(
         "🐛 Report layout issue / Copy debug info",
         copySiteDiagnostics,
       );
