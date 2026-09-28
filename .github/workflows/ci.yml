@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Syntax check userscript
+        run: node --check ultrawide-page-limiter.user.js
+
+      - name: Version is in sync across script and READMEs
+        run: |
+          set -euo pipefail
+          script_ver=$(sed -nE 's/.*@version[[:space:]]+([0-9.]+).*/\1/p' ultrawide-page-limiter.user.js | head -1)
+          echo "script version: $script_ver"
+          grep -q "version-${script_ver}-blue" README.md
+          grep -q "версия-${script_ver}-blue" README.ru.md
+          echo "OK: README badges match @version $script_ver"
