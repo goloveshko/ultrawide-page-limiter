@@ -30,8 +30,11 @@
   const STYLE_ELEMENT_ID = "uw-limiter-style";
   const FALLBACK_DEFAULT_WIDTH = 1400;
   const IDLE_DOCK_MS = 2500;
-  // Host is 44px wide with a 20px right gap: shifting +54px leaves a ~10px tab
-  const DOCK_OFFSET_PX = 54;
+  // Host is 44px wide with a 20px right gap: shifting +46px leaves an 18px
+  // tab, thick enough to hover reliably next to an always-visible scrollbar
+  const DOCK_OFFSET_PX = 46;
+  // Full-height invisible strip at the right edge that undocks on mousemove
+  const EDGE_LANE_PX = 28;
   const currentDomain = window.location.hostname;
 
   const keyEnabled = `width_limit_${currentDomain}`;
@@ -406,7 +409,18 @@
     host.style.transform = docked
       ? `translateX(${DOCK_OFFSET_PX}px)`
       : "translateX(0)";
-    host.style.opacity = docked ? "0.3" : "1";
+    host.style.opacity = docked ? "0.35" : "1";
+    if (docked) {
+      document.addEventListener("mousemove", onEdgeHover, { passive: true });
+    } else {
+      document.removeEventListener("mousemove", onEdgeHover);
+    }
+  }
+
+  function onEdgeHover(e) {
+    if (e.clientX > document.documentElement.clientWidth - EDGE_LANE_PX) {
+      undock();
+    }
   }
 
   function clearDockTimer() {
@@ -418,6 +432,7 @@
 
   function undock() {
     clearDockTimer();
+    document.removeEventListener("mousemove", onEdgeHover);
     if (!host || host.style.display === "none") return;
     setDocked(false);
     if (!hovered) {
