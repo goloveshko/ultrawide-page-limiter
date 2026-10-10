@@ -23,7 +23,7 @@ Browsing the web on an ultrawide or super-ultrawide monitor often results in unr
 - **⚡ Zero Layout Flash (`@run-at document-start`):** Pre-applies constraints before the page finishes rendering to prevent visual flickering.
 - **🎨 Dynamic CSS Variables (`--uw-max-width`):** Live width resizing without re-parsing stylesheets or reloading the page.
 - **🛡️ Isolated Floating Control:** Floating toggle button lives inside an open **Shadow DOM** and uses CSP-safe DOM rendering (`textContent`, no `innerHTML`) for the floating UI — immune to aggressive page CSS resets and Trusted Types restrictions.
-- **🌗 Auto-Docking:** After 2.5 seconds of inactivity the floating button glides into the right screen edge as a slim translucent tab, so it never covers site UI; it expands back instantly on hover.
+- **🌗 Auto-Docking:** After 2.5 seconds of inactivity the floating button glides into the right screen edge as a slim translucent tab, so it never covers site UI. Move the mouse to the right edge (or hover the tab) to bring it back.
 - **🎬 Fullscreen Aware:** Automatically hides the floating control and unlocks 100% viewport width whenever video playback enters fullscreen mode.
 - **📐 Hierarchy Configuration:** Per-domain custom widths fall back to a user-defined Global Default Width, and then to `1400px`.
 - **🧩 Smart Site Adaptations:** Dedicated declarative layouts for complex SPAs:
@@ -56,7 +56,7 @@ The floating widget provides immediate visual feedback and quick controls:
 | :---: | :---: | :--- |
 | <img src="assets/button-off.png" width="48" alt="Disabled" /> | <img src="assets/button-on.png" width="48" alt="Enabled" /> | • **Left Click:** Toggle ON / OFF<br>• **Right Click:** Change width (prompt) |
 
-> **Auto-dock:** when idle for 2.5s the button slides into the right screen edge, leaving a small translucent tab. Hover over the tab to bring it back.
+> **Auto-dock:** when idle for 2.5s the button slides into the right screen edge, leaving a small translucent tab. Move the mouse to the right edge — or hover the tab — to bring it back. Works fine next to an always-visible scrollbar.
 
 ### Extension Menu Commands
 
