@@ -56,8 +56,52 @@
   };
   let host = null;
   let btn = null;
+  let iconCore = null;
   let dockTimer = null;
   let hovered = false;
+
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
+  function svgEl(name, attrs) {
+    const el = document.createElementNS(SVG_NS, name);
+    for (const [k, v] of Object.entries(attrs)) {
+      el.setAttribute(k, v);
+    }
+    return el;
+  }
+
+  // Font-independent glyph: two edge bars + a center content block that is
+  // outlined when disabled and filled when the width limit is active
+  function createButtonIcon() {
+    const svg = svgEl("svg", {
+      viewBox: "0 0 24 24",
+      width: "22",
+      height: "22",
+      "aria-hidden": "true",
+    });
+    svg.appendChild(
+      svgEl("rect", { x: 1, y: 6, width: 2.6, height: 12, rx: 1.3, fill: "currentColor" })
+    );
+    svg.appendChild(
+      svgEl("rect", { x: 20.4, y: 6, width: 2.6, height: 12, rx: 1.3, fill: "currentColor" })
+    );
+    iconCore = svgEl("rect", { x: 7.2, y: 8, width: 9.6, height: 8, rx: 2 });
+    svg.appendChild(iconCore);
+    return svg;
+  }
+
+  function updateIconAppearance() {
+    if (!iconCore) return;
+    if (isEnabled) {
+      iconCore.setAttribute("fill", "currentColor");
+      iconCore.removeAttribute("stroke");
+      iconCore.removeAttribute("stroke-width");
+    } else {
+      iconCore.setAttribute("fill", "none");
+      iconCore.setAttribute("stroke", "currentColor");
+      iconCore.setAttribute("stroke-width", "1.8");
+    }
+  }
 
   // Substring matching would also hit lookalike hosts ("evilgithub.com",
   // "notya.ru"); match the hostname against the registrable domain instead
@@ -387,7 +431,7 @@
   function updateButtonAppearance() {
     if (!btn || !host) return;
     host.style.display = showFloatingBtn ? "block" : "none";
-    btn.textContent = isEnabled ? "📐" : "📏";
+    updateIconAppearance();
     btn.style.background = isEnabled
       ? "rgba(46, 125, 50, 0.9)"
       : "rgba(40, 40, 40, 0.9)";
@@ -439,7 +483,6 @@
                     align-items: center;
                     justify-content: center;
                     cursor: pointer;
-                    font-size: 22px;
                     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
                     transition: transform 0.15s ease, background 0.2s ease;
                     user-select: none;
@@ -459,6 +502,7 @@
 
       btn = document.createElement("div");
       btn.className = "limiter-btn";
+      btn.appendChild(createButtonIcon());
 
       btn.addEventListener("click", (e) => {
         e.preventDefault();
