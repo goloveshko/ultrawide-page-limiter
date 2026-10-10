@@ -1,6 +1,6 @@
 # Wide Screen Content Limiter
 
-[![Version](https://img.shields.io/badge/version-2.2-blue.svg)](https://github.com/goloveshko/ultrawide-page-limiter)
+[![Version](https://img.shields.io/badge/version-2.3-blue.svg)](https://github.com/goloveshko/ultrawide-page-limiter)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Supported Managers](https://img.shields.io/badge/userscript-Tampermonkey%20%7C%20Violentmonkey-green.svg)](#installation)
 
@@ -23,6 +23,7 @@ Browsing the web on an ultrawide or super-ultrawide monitor often results in unr
 - **⚡ Zero Layout Flash (`@run-at document-start`):** Pre-applies constraints before the page finishes rendering to prevent visual flickering.
 - **🎨 Dynamic CSS Variables (`--uw-max-width`):** Live width resizing without re-parsing stylesheets or reloading the page.
 - **🛡️ Isolated Floating Control:** Floating toggle button lives inside an open **Shadow DOM** and uses CSP-safe DOM rendering (`textContent`, no `innerHTML`) for the floating UI — immune to aggressive page CSS resets and Trusted Types restrictions.
+- **🌗 Auto-Docking:** After 2.5 seconds of inactivity the floating button glides into the right screen edge as a slim translucent tab, so it never covers site UI; it expands back instantly on hover.
 - **🎬 Fullscreen Aware:** Automatically hides the floating control and unlocks 100% viewport width whenever video playback enters fullscreen mode.
 - **📐 Hierarchy Configuration:** Per-domain custom widths fall back to a user-defined Global Default Width, and then to `1400px`.
 - **🧩 Smart Site Adaptations:** Dedicated declarative layouts for complex SPAs:
@@ -54,6 +55,8 @@ The floating widget provides immediate visual feedback and quick controls:
 | Disabled (Full Width) | Enabled (Constrained) | Controls |
 | :---: | :---: | :--- |
 | <img src="assets/button-off.png" width="48" alt="Disabled" /> | <img src="assets/button-on.png" width="48" alt="Enabled" /> | • **Left Click:** Toggle ON / OFF<br>• **Right Click:** Change width (prompt) |
+
+> **Auto-dock:** when idle for 2.5s the button slides into the right screen edge, leaving a small translucent tab. Hover over the tab to bring it back.
 
 ### Extension Menu Commands
 
