@@ -2,7 +2,7 @@
 // @name         Wide Screen Content Limiter
 // @name:ru      Ограничитель ширины контента для широких экранов
 // @namespace    https://github.com/goloveshko/ultrawide-page-limiter
-// @version      2.2
+// @version      2.3
 // @description  Limits page width with adaptations for YouTube, Yandex, GitHub and other sites
 // @description:ru Ограничивает ширину страниц с адаптацией для YouTube, Gmail, Yandex, GitHub и других сайтов
 // @author       goloveshko
@@ -29,6 +29,9 @@
 
   const STYLE_ELEMENT_ID = "uw-limiter-style";
   const FALLBACK_DEFAULT_WIDTH = 1400;
+  const IDLE_DOCK_MS = 2500;
+  // Host is 44px wide with a 20px right gap: shifting +54px leaves a ~10px tab
+  const DOCK_OFFSET_PX = 54;
   const currentDomain = window.location.hostname;
 
   const keyEnabled = `width_limit_${currentDomain}`;
@@ -53,6 +56,8 @@
   };
   let host = null;
   let btn = null;
+  let dockTimer = null;
+  let hovered = false;
 
   // Substring matching would also hit lookalike hosts ("evilgithub.com",
   // "notya.ru"); match the hostname against the registrable domain instead
@@ -251,6 +256,11 @@
 
     if (host) {
       host.style.display = showFloatingBtn ? "block" : "none";
+      if (showFloatingBtn) {
+        undock();
+      } else {
+        clearDockTimer();
+      }
     } else if (showFloatingBtn) {
       createToggleButton();
     }
@@ -347,6 +357,33 @@
     updateButtonAppearance();
   }
 
+  function setDocked(docked) {
+    if (!host) return;
+    host.style.transform = docked
+      ? `translateX(${DOCK_OFFSET_PX}px)`
+      : "translateX(0)";
+    host.style.opacity = docked ? "0.3" : "1";
+  }
+
+  function clearDockTimer() {
+    if (dockTimer) {
+      clearTimeout(dockTimer);
+      dockTimer = null;
+    }
+  }
+
+  function undock() {
+    clearDockTimer();
+    if (!host || host.style.display === "none") return;
+    setDocked(false);
+    if (!hovered) {
+      dockTimer = setTimeout(() => {
+        dockTimer = null;
+        setDocked(true);
+      }, IDLE_DOCK_MS);
+    }
+  }
+
   function updateButtonAppearance() {
     if (!btn || !host) return;
     host.style.display = showFloatingBtn ? "block" : "none";
@@ -355,6 +392,9 @@
       ? "rgba(46, 125, 50, 0.9)"
       : "rgba(40, 40, 40, 0.9)";
     btn.title = `Width: ${siteMaxWidth}px\n• Left Click: Enable / Disable\n• Right Click: Change width`;
+    if (showFloatingBtn) {
+      undock();
+    }
   }
 
   function createToggleButton() {
@@ -374,7 +414,17 @@
                 height: 44px !important;
                 z-index: 2147483647 !important;
                 pointer-events: auto !important;
+                transition: transform 0.25s ease, opacity 0.25s ease !important;
             `;
+
+      host.addEventListener("mouseenter", () => {
+        hovered = true;
+        undock();
+      });
+      host.addEventListener("mouseleave", () => {
+        hovered = false;
+        undock();
+      });
 
       const shadow = host.attachShadow({ mode: "open" });
 
@@ -562,9 +612,13 @@
 
     if (isFullscreen) {
       host.style.setProperty("display", "none", "important");
+      clearDockTimer();
     } else {
       host.style.removeProperty("display");
       host.style.display = showFloatingBtn ? "block" : "none";
+      if (showFloatingBtn) {
+        undock();
+      }
     }
   }
 
