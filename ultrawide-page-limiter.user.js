@@ -671,6 +671,7 @@
     if (isFullscreen) {
       host.style.setProperty("display", "none", "important");
       clearDockTimer();
+      document.removeEventListener("mousemove", onEdgeHover);
     } else {
       host.style.removeProperty("display");
       host.style.display = showFloatingBtn ? "block" : "none";
