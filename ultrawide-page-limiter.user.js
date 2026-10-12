@@ -301,6 +301,7 @@
         undock();
       } else {
         clearDockTimer();
+        document.removeEventListener("mousemove", onEdgeHover);
       }
     } else if (showFloatingBtn) {
       createToggleButton();
@@ -601,9 +602,13 @@
       table += `| **${m.label}** | \`${m.tag}\` | \`${m.selector}\` | ${m.display} | ${m.position} | ${m.dimensions} | ${m.left} | ${m.margin} |\n`;
     });
 
+    const activeRule = SITE_RULES.find((item) => item.match(currentDomain));
+    const ruleLabel = activeRule ? activeRule.name : "Default Fallback";
+
     return [
       `### 🐛 Layout Diagnostic Report: \`${currentDomain}\``,
       `- **URL:** ${window.location.href}`,
+      `- **Active Rule:** \`${ruleLabel}\``,
       `- **Viewport:** ${window.innerWidth}x${window.innerHeight} (DPR: ${window.devicePixelRatio || 1})`,
       `- **Settings:** Enabled: \`${isEnabled}\`, Site Width: \`${siteMaxWidth}px\`, Global Default: \`${globalDefaultWidth}px\``,
       "",
