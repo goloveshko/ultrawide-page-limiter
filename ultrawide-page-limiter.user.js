@@ -152,15 +152,8 @@
                 margin-right: auto !important;
             }
 
-            /* 2. Watch page: center player + comments */
+            /* 2. Watch page (incl. theater): center player + comments */
             ytd-watch-flexy:not([fullscreen]) #columns {
-                max-width: var(--uw-max-width) !important;
-                margin-left: auto !important;
-                margin-right: auto !important;
-            }
-
-            /* 3. Theater mode: player spans full width, comments stay centered */
-            ytd-watch-flexy[theater]:not([fullscreen]) #columns {
                 max-width: var(--uw-max-width) !important;
                 margin-left: auto !important;
                 margin-right: auto !important;
@@ -170,7 +163,8 @@
     {
       name: "Yandex",
       match: (domain) =>
-        matchesDomain(domain, "ya.ru") || /(^|\.)yandex\.[a-z]+$/.test(domain),
+        matchesDomain(domain, "ya.ru") ||
+        /(^|\.)yandex\.[a-z]+(\.[a-z]+)?$/.test(domain),
       css: `
                 .HeaderDesktop-Content,
                 .HeaderContainer,
